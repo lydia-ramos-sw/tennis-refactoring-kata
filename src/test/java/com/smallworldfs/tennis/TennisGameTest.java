@@ -67,7 +67,7 @@ class TennisGameTest {
     @ParameterizedTest
     @MethodSource("possibleScoresAndExpectedScore")
     void checkAllScoresTennisGame1(int player1Score, int player2Score, String expectedScore) {
-        TennisGame game = new TennisGame("David", "player2");
+        TennisGame game = new TennisGame("player1", "player2");
         checkAllScores(game, player1Score, player2Score, expectedScore);
     }
 }
