@@ -1,125 +1,90 @@
 package com.smallworldfs.tennis;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class TennisGame{
-
-    public int P1point = 0;
-    public int P2point = 0;
-
-    public String P1res = "";
-    public String P2res = "";
-    private String player1Name;
-    private String player2Name;
-    public Map<Integer, String> pointsTranslations = new HashMap<Integer, String>();
+    public Player player1;
+    public Player player2;
+    public Player winning;
+    public Player losing;
 
     public TennisGame(String player1Name, String player2Name) {
-        this.player1Name = player1Name;
-        this.player2Name = player2Name;
-        loadPointsTranslations();
+        this.player1 = new Player(player1Name);
+        this.player2 = new Player(player2Name);
     }
 
-    private void loadPointsTranslations() {
-        pointsTranslations.put(0, "Love");
-        pointsTranslations.put(1, "Fifteen");
-        pointsTranslations.put(2, "Thirty");
-        pointsTranslations.put(3, "Forty");
+    public String sameScore() {
+        String score;
+        score = player1.getsPoints() + "-All";
+        return score;
+    }
+
+    public void determineSituation(Player player1, Player player2) {
+        if (player1.getPoints() > player2.getPoints()) {
+            winning = player1;
+            losing = player2;
+        } else {
+            winning = player2;
+            losing = player1;
+        }
+    }
+
+    public String isGameStillGoingOn(Player winning, Player losing, String score) {
+        if ((winning.getPoints() > 0 && losing.getPoints() == 0)
+                || (losing.getPoints() > 0 && winning.getPoints() == 0)
+                || (winning.getPoints() > losing.getPoints() && winning.getPoints() < 4)
+                || (losing.getPoints() > winning.getPoints() && losing.getPoints() < 4)) {
+            return player1.getsPoints() + "-" + player2.getsPoints();
+        }
+        return score;
+    }
+
+    public String setAdvantage(Player winning, Player losing) {
+        if (winning.getPoints() > losing.getPoints() && losing.getPoints() >= 3) {
+            return "Advantage ".concat(winning.getPlayerName());
+        }
+        return "";
+    }
+
+    public boolean isEndGameStage(Player player, Player other) {
+        return player.getPoints() > 3 || other.getPoints() > 3 || (player.getPoints() == 3 && other.getPoints() == 3);
+    }
+
+    public String setWin(Player winning, Player losing, String score) {
+        if (isEndGameStage(winning, losing)
+                && winning.getPoints() >= 4 && losing.getPoints() >= 0
+                && (winning.getPoints() - losing.getPoints()) >= 2) {
+            return "Win for ".concat(winning.getPlayerName());
+        }
+        return score;
     }
 
     public String getScore() {
+        determineSituation(player1, player2);
         String score = "";
-        if (P1point == P2point && P1point < 4) {
-            if (P1point == 0 || P1point == 1 || P1point == 2)
-                score = pointsTranslations.get(P1point);
-            score += "-All";
+        if ((player1.getPoints() == player2.getPoints() && player1.getPoints() < 4)) {
+            score += sameScore();
         }
-
-        if (P1point == P2point && P1point >= 3)
+        if (player1.getPoints() == player2.getPoints() && player1.getPoints() >= 3)
             score = "Deuce";
 
-        if (P1point > 0 && P2point == 0) {
-            score = onePlayerScoresTheOtherDoesnt(score, P1point, P2point);
-        }
+        score = isGameStillGoingOn(winning, losing, score);
 
-        if (P2point > 0 && P1point == 0) {
-            score = onePlayerScoresTheOtherDoesnt(score, P2point, P1point);
-        }
+        score = score + setAdvantage(winning, losing);
 
-        if (P1point > P2point && P1point < 4) {
-            score = onePlayerIsWinning(score, P1point, P2point);
-        }
-
-        if (P2point > P1point && P2point < 4) {
-            score = onePlayerIsWinning(score, P2point, P1point);
-        }
-
-        if (P1point > P2point && P2point >= 3) {
-            score = "Advantage player1";
-        }
-
-        if (P2point > P1point && P1point >= 3) {
-            score = "Advantage player2";
-        }
-
-        if (P1point >= 4 && P2point >= 0 && (P1point - P2point) >= 2) {
-            score = "Win for player1";
-        }
-        if (P2point >= 4 && P1point >= 0 && (P2point - P1point) >= 2) {
-            score = "Win for player2";
-        }
+        score = setWin(winning, losing, score);
         return score;
-    }
-
-    private String onePlayerScoresTheOtherDoesnt(String score, int PScorer, int PNonScorer) {
-        if (PScorer == 1 || PScorer == 2 || PScorer == 3)
-            fillPlayerPoints(PScorer == P1point, pointsTranslations.get(PScorer));
-
-        fillPlayerPoints(PScorer != P1point, "Love");
-        score = P1res + "-" + P2res;
-
-        return score;
-    }
-
-    private String onePlayerIsWinning(String score, int PScorer, int PNonScorer) {
-        if (PScorer == 2 || PScorer == 3)
-            fillPlayerPoints(PScorer == P1point, pointsTranslations.get(PScorer));
-        if (PNonScorer == 1 || PNonScorer == 2)
-            fillPlayerPoints(PScorer != P1point, pointsTranslations.get(PNonScorer));
-        score = P1res + "-" + P2res;
-        return score;
-    }
-
-    private void fillPlayerPoints(boolean fillP1, String value) {
-        if (fillP1) {
-            P1res = value;
-        } else {
-            P2res = value;
-        }
-    }
-
-    public void SetP1Score(int number) {
-        for (int i = 0; i < number; i++) {
-            P1Score();
-        }
-    }
-
-    public void SetP2Score(int number) {
-        for (int i = 0; i < number; i++) {
-            P2Score();
-        }
     }
 
     public void P1Score() {
-        P1point++;
+        player1.setPoints(player1.getPoints() + 1);
     }
 
     public void P2Score() {
-        P2point++;
+        player2.setPoints(player2.getPoints() + 1);
+        ;
     }
 
     public void wonPoint(String player) {
-        if (player == "player1")
+        if (player1.getPlayerName().equals(player))
             P1Score();
         else
             P2Score();
